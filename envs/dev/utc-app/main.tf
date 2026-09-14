@@ -138,7 +138,7 @@ module "rds" {
   engine         = "postgres"
   engine_version = "15.4"
   instance_class = "db.t4g.micro"
-  
+
   db_name     = "utcappdb"
   db_username = "utcadmin"
   db_password = var.db_password # Pass via terraform.tfvars or TF_VAR_db_password
@@ -146,6 +146,43 @@ module "rds" {
   backup_retention_period = 7
   backup_window           = "03:00-04:00"
   multi_az                = false # Set to true for production
+
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+
+// Invoke the EFS Module
+
+# Random string helper to guarantee unique S3 bucket name
+resource "random_string" "suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
+module "s3" {
+  source = "../../../modules/s3"
+
+  project_name  = "utc-app"
+  environment   = "dev"
+  bucket_suffix = random_string.suffix.result
+  force_destroy = true
+
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+
+module "efs" {
+  source = "../../../modules/efs"
+
+  project_name          = "utc-app"
+  vpc_id                = module.vpc.vpc_id
+  private_subnet_ids    = module.vpc.private_subnet_ids
+  app_security_group_id = module.security_groups.app_security_group_id
 
   tags = {
     Environment = "dev"
