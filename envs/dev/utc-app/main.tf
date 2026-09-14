@@ -223,3 +223,19 @@ module "secrets" {
   }
 }
 
+// settiing the monitoring module
+
+module "monitoring" {
+  source = "../../../modules/monitoring"
+
+  project_name           = "utc-app"
+  autoscaling_group_name = module.asg.autoscaling_group_id
+  log_retention_days     = 14
+  cpu_threshold_percent  = 80
+  alert_email            = "olgamutavu@gmail.com" # Replace with your alert email
+
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}

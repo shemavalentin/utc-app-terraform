@@ -12,3 +12,5 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+variable "secret_arn" { type = string }

@@ -59,3 +59,23 @@ resource "aws_iam_instance_profile" "app_profile" {
 
   tags = merge(var.tags, { Name = "${var.project_name}-instance-profile" })
 }
+
+# Read permissions for Secrets Manager
+data "aws_iam_policy_document" "secrets_access" {
+  statement {
+    sid       = "AllowReadAppSecrets"
+    effect    = "Allow"
+    actions   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
+    resources = [var.secret_arn]
+  }
+}
+
+resource "aws_iam_policy" "secrets_access" {
+  name   = "${var.project_name}-secrets-access-policy"
+  policy = data.aws_iam_policy_document.secrets_access.json
+}
+
+resource "aws_iam_role_policy_attachment" "secrets_access" {
+  role       = aws_iam_role.app_role.name
+  policy_arn = aws_iam_policy.secrets_access.arn
+}
