@@ -197,9 +197,29 @@ module "iam" {
 
   project_name  = "utc-app"
   s3_bucket_arn = module.s3.bucket_arn
+  secret_arn    = module.secrets.secret_arn
 
   tags = {
     Environment = "dev"
     ManagedBy   = "Terraform"
   }
 }
+
+
+module "secrets" {
+  source = "../../../modules/secrets"
+
+  project_name = "utc-app"
+  db_engine    = "postgres"
+  db_host      = module.rds.db_address
+  db_port      = 5432
+  db_name      = "utcappdb"
+  db_username  = "utcadmin"
+  db_password  = var.db_password
+
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+
