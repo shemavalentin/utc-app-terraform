@@ -110,10 +110,11 @@ module "cdn" {
 module "asg" {
   source = "../../../modules/asg"
 
-  project_name          = "3-tier-app"
-  private_subnet_ids    = module.vpc.private_subnet_ids
-  app_security_group_id = module.security_groups.app_security_group_id
-  target_group_arn      = module.alb.target_group_arn
+  project_name             = "3-tier-app"
+  private_subnet_ids       = module.vpc.private_subnet_ids
+  app_security_group_id    = module.security_groups.app_security_group_id
+  target_group_arn         = module.alb.target_group_arn
+  iam_instance_profile_arn = module.iam.instance_profile_arn # Wire IAM profile here
 
   instance_type    = "t3.micro"
   min_size         = 2
@@ -183,6 +184,19 @@ module "efs" {
   vpc_id                = module.vpc.vpc_id
   private_subnet_ids    = module.vpc.private_subnet_ids
   app_security_group_id = module.security_groups.app_security_group_id
+
+  tags = {
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+
+// Invoke the IAM Module
+module "iam" {
+  source = "../../../modules/iam"
+
+  project_name  = "utc-app"
+  s3_bucket_arn = module.s3.bucket_arn
 
   tags = {
     Environment = "dev"
